@@ -1,0 +1,27 @@
+// Assertion Module for UART_RX Interface
+module uart_rx_assert(input reg clk,input reg interrupt,input reg ureg_gnt,input reg ureg_req,input reg reset);
+
+
+	always @(posedge clk)
+	  begin
+	  wait(reset);
+	  begin
+	  if (ureg_req == 1)
+	 	begin
+		@(posedge clk);
+
+		$display("----------uart_rx_assert------if ureg_req is asserted---grant =%b  , ",ureg_gnt);
+		end
+
+	  else 
+		begin
+		$display("------uart_rx_assert------- if ureg_req is de-asserted------ureg_gnr =%b ",ureg_gnt);	
+         	end
+	end
+	end
+
+	initial  begin
+		repeat(300)@(posedge clk);
+		$finish;
+end
+endmodule // uart_rx_assert

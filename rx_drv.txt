@@ -1,0 +1,60 @@
+// UART RX Driver Module
+
+module uart_rx_drv(input  clk,input reset,output wire rxd);
+
+	reg start_bit;
+	reg stop_bit;
+	reg rxd_data;
+	reg [7:0] array[6:0];
+
+	initial
+	begin
+	  start_bit = 1'b0;
+	  stop_bit = 1'b1;
+	end
+	
+	assign rxd = rxd_data;
+
+	integer i;
+always @ (posedge clk)
+begin
+$readmemb("testcases",array);
+	
+	if (reset == 1)
+	begin
+	for(i=0; i < 7; i=i+1)
+	begin
+
+	   $readmemb("/home/mshivashankar/JumpStart_-_ASIC_Verification/Writing_a_Testbench:_Verilog/Homework_1/Writing_Testbench_Verilog/tb/testcases.txt", array);
+
+	   @(posedge clk) rxd_data = start_bit;	
+	   @(posedge clk) rxd_data = array[i][7];
+	   @(posedge clk) rxd_data = array[i][6];
+	   @(posedge clk) rxd_data = array[i][5];
+	   @(posedge clk) rxd_data = array[i][4];
+	   @(posedge clk) rxd_data = array[i][3];
+	   @(posedge clk) rxd_data = array[i][2];
+	   @(posedge clk) rxd_data = array[i][1];
+	   @(posedge clk) rxd_data = array[i][0];
+	   repeat(2)@(posedge clk) rxd_data=stop_bit;
+	end
+	end
+	
+end
+
+	initial begin
+		$monitor("%0t....................... rxd=%b ........................",$time,rxd);
+		repeat(150) @(posedge clk);
+		$finish;
+end
+endmodule // uart_rx_drv
+
+
+   
+
+
+
+
+
+
+

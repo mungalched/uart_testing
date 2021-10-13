@@ -1,0 +1,23 @@
+module clk_reset_gen(output reg clock,output reg  reset);
+
+
+ parameter cycle = 10;   
+	
+	initial begin
+	 clock =0;
+	 reset =0;
+	end
+
+	always  #((cycle/2)) clock = ~ clock;
+
+	initial begin 
+	repeat(2)@(posedge clock) reset = 0;
+		@(posedge clock) reset = 1;
+//		@(posedge clock) rst =0;
+	repeat(100)@(posedge clock);
+		 reset = 0;		 
+	end  
+
+endmodule // clk_reset_gen
+
+  

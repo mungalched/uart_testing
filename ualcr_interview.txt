@@ -1,0 +1,26 @@
+class driver extends uvm_driver #(uvm_seq_item);
+`uvm_component_utils(driver)
+
+function new(string name = "",uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+function build_phase();
+	super.build_phase;
+	req = uvm_seq_item::type_id::create("req");
+  `uvm_config_db #(virt_intf) get :: (this,,"driver_intf",intf);
+endfunction
+
+task run_phase;
+forever
+ seq_item_port.get_next_item(req);
+	req.driver();
+ seq_item_port.item_done;
+endtask
+
+endclass
+
+
+
+constraint even {data [i]%2 ==0; }
+

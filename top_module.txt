@@ -1,0 +1,64 @@
+// Top level testbench with DUT instantiation
+
+module tb_top;
+
+	 wire 	     clk;
+	 wire	     rst;
+	 wire 	     ureg_rdwr;
+	 wire [7:0]  ureg_addr;
+ 	 wire [7:0]  ureg_wrdat;
+	 wire [7:0]  ureg_rddat;
+	 wire 	     ureg_gnt;
+	 wire 	     interrupt;
+	 wire 	     rxd;
+	 wire	     ureg_req;
+
+//////////////////////////////////////////
+//dut instatiation
+
+	uart_rx  dut 	(.CLK(clk),.RSTN(rst),.UREG_RDWR(ureg_rdwr),.UREG_ADDR(ureg_addr),
+.UREG_WRDAT(ureg_wrdat),.UREG_REQ(ureg_req),.UREG_GNT(ureg_gnt),.UREG_RDDAT(ureg_rddat)
+,.UART_INTERRUPT(interrupt),.RXD(rxd));
+
+///////////////////////////////////////
+//uart_referance
+      
+ 	uart_refr   tb4  (.clk(clk),.interrupt(interrupt),.reset(rst),.received_data(ureg_rddat));
+///////////////////////////////////////
+//clk_reset_gen
+
+ 	clk_reset_gen   tb0 (.clock(clk),.reset(rst));  
+
+//////////////////////////////////////
+//host_if_drv_chk
+
+	host_if_drv_chk  tb1 (.ureg_addr(ureg_addr),.ureg_rdwr(ureg_rdwr),.ureg_wrdat(ureg_wrdat),.ureg_req(ureg_req),.clk(clk),.ureg_rddat(ureg_rddat),.interrupt(interrupt),.ureg_gnt(ureg_gnt),.reset(rst));
+
+///////////////////////////////////
+//uart_rx_drv
+
+	uart_rx_drv    tb2  (.clk(clk),.reset(rst),.rxd(rxd));
+
+////////////////////////////////
+//uart_rx_assert
+
+	uart_rx_assert   tb3  	(.clk(clk),.ureg_gnt(ureg_gnt),.interrupt(interrupt),.ureg_req(ureg_req),.reset(rst));
+
+
+always @(posedge clk) begin
+ tb4.expected_data[4] = tb2.array[4];
+ tb4.expected_data[0] = tb2.array[0];
+ tb4.expected_data[1] = tb2.array[1];
+ tb4.expected_data[2] = tb2.array[2];
+ tb4.expected_data[3] = tb2.array[3];
+ tb4.expected_data[5] = tb2.array[5];
+ tb4.expected_data[6] = tb2.array[6];
+end
+
+
+	initial begin
+		$monitor(".....");
+	  repeat(1000) @(posedge clk);
+	  $finish;
+	end
+endmodule // tb_top

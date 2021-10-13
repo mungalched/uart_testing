@@ -1,0 +1,77 @@
+// Host Interface Driver / Checker Module\u200b
+
+module host_if_drv_chk(output	wire [7:0] ureg_addr,output wire [7:0] ureg_wrdat,output reg  ureg_rdwr, input  clk,output reg ureg_req, input wire  [7:0] ureg_rddat,input reg  interrupt, input reg ureg_gnt,input  reset);
+wire [7:0] data_out;
+reg [7:0] data;
+reg [7:0] addr_in;
+reg [7:0] wrdat_in;
+
+	
+task  reg_write;
+
+	input  [7:0]  wr_data;
+	input  [7:0]  wr_addr;
+begin	
+	$display("%0t...data %h....addr %b",$time,wr_data,wr_addr);
+	@(posedge clk)
+	begin
+	  ureg_rdwr      <= 1;
+	  ureg_req       <= 1;
+	  wrdat_in       <= wr_data;
+	  addr_in        <= wr_addr;
+	end
+	@(posedge clk)
+	begin
+	  ureg_rdwr    <=  1;
+	  ureg_req     <=  0;
+	  wrdat_in     <=  8'bz;
+	  addr_in      <=  8'bz;
+	end
+end
+endtask
+
+task  reg_read;
+
+	input   [7:0]      rd_addr;
+	output  [7:0]      data;
+begin	
+	$display("%0t....rd_addr %h",$time,rd_addr);
+	@(posedge clk)
+	begin
+	 ureg_rdwr    <=  0;
+	 ureg_req     <=  1;
+	 addr_in      <=  rd_addr;
+	end
+	@(posedge clk)
+	begin
+	  wait(ureg_gnt);
+	  data   <=  data_out;
+	end
+	
+	
+end
+
+endtask
+
+assign data_out    = ureg_rddat;
+assign ureg_wrdat  = wrdat_in;
+assign ureg_addr   = addr_in;
+
+	initial begin
+
+		wait(reset);     
+		reg_write(8'h20,8'h00);
+		reg_write(8'hff,8'h00);
+		reg_write($random,8'h00);
+		wait(interrupt);
+		 begin
+		reg_read(8'h01,data);
+		end
+		$monitor("ureg_req = %b,ureg_addr = %b,ureg_rdwr =%b,ureg_wrdat =%b,ureg_rddat =%b",ureg_req,ureg_addr,ureg_rdwr,ureg_wrdat,ureg_rddat);
+		repeat(500) @(posedge clk);
+		$finish;		
+	end
+
+ endmodule // host_if_drv_chk
+
+   
